@@ -2,22 +2,13 @@ package com.example.cleanapp
 
 import android.animation.Animator
 import android.animation.ValueAnimator
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
-import android.os.SystemClock
-import android.util.Log
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import com.example.cleanapp.databinding.ActivityClearBinding
@@ -42,20 +33,9 @@ class ClearActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityClearBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        checkIsCleaned()
-    }
-
-    private fun checkIsCleaned() {
-//        val isCleaned: Boolean = (PreferenceHelper.getInstance(this)?.isCleaned) as Boolean
-//        PreferenceHelper.getInstance(this)?.isCleaned = true
-//        Toast.makeText(this, "isCleaned: $isCleaned", Toast.LENGTH_SHORT).show()
-        if (!isCleaned){
-            setAnimation()
-            setBackButton()
-            setDetailSizeData()
-        } else {
-            Toast.makeText(this, "Дождитесь 10 секунд", Toast.LENGTH_SHORT).show()
-        }
+        setAnimation()
+        setBackButton()
+        setDetailSizeData()
     }
 
     private fun setBackButton() {
@@ -68,21 +48,20 @@ class ClearActivity : AppCompatActivity() {
         _isTotalSizeAnimated.value = false
         isClearingReady = false
         isCleaned = false
-//        val randomSize = (0..until).random()
         val animator = ValueAnimator.ofInt(0, until.toInt())
         animator.duration = 5000
         animator.addUpdateListener { animation ->
-            if (animation.animatedValue.toString().toInt() > 1000) {
+            if (animation.animatedValue.toString().toInt() > 1000.0) {
                 binding.txtClearSize.text =
                     prettyCount(animation.animatedValue.toString().toDouble())
             } else {
                 binding.txtClearSize.text = animation.animatedValue.toString()
             }
-            if (binding.txtClearSize.text.toString().toDouble() < 99) {
+            if (binding.txtClearSize.text.toString().replace(",", ".").toDouble() < 99.0) {
                 binding.txtClearType.text = "б"
                 currentType = "б"
             }
-            if (binding.txtClearSize.text.toString().toDouble() > 100) {
+            if (binding.txtClearSize.text.toString().replace(",", ".").toDouble() > 100.0) {
                 binding.txtClearType.text = "мб"
                 currentType = "мб"
             }
@@ -94,7 +73,8 @@ class ClearActivity : AppCompatActivity() {
         }
         animator.addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator?) {
-
+                binding.btnMain.isEnabled = false
+                binding.btnMain.text = "Подождите..."
             }
 
             override fun onAnimationEnd(animation: Animator?) {
@@ -106,6 +86,7 @@ class ClearActivity : AppCompatActivity() {
                 setDetailSizeTxtVisible()
 
                 if (currentValue > 1000) {
+                    binding.btnMain.isEnabled = true
                     setButtonClearSize(
                         "Очистить ${
                             prettyCount(
@@ -129,7 +110,7 @@ class ClearActivity : AppCompatActivity() {
         animator.start()
     }
 
-    fun startCountdown() {
+    private fun startCountdown() {
         val animator = ValueAnimator.ofInt(currentValue.toInt(), 0)
         animator.duration = 5000
         animator.addUpdateListener { animation ->
@@ -139,11 +120,11 @@ class ClearActivity : AppCompatActivity() {
             } else {
                 binding.txtClearSize.text = animation.animatedValue.toString()
             }
-            if (binding.txtClearSize.text.toString().toDouble() < 99) {
+            if (binding.txtClearSize.text.toString().replace(",", ".").toDouble() < 99) {
                 binding.txtClearType.text = "б"
                 currentType = "б"
             }
-            if (binding.txtClearSize.text.toString().toDouble() > 100) {
+            if (binding.txtClearSize.text.toString().replace(",", ".").toDouble() > 100) {
                 binding.txtClearType.text = "мб"
                 currentType = "мб"
             }
@@ -155,6 +136,8 @@ class ClearActivity : AppCompatActivity() {
         }
         animator.addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator?) {
+                binding.btnMain.text = "Подождите..."
+                binding.btnMain.isEnabled = false
                 Handler().postDelayed({
                     replaceRefreshIconsForDone()
                 }, 2500)
@@ -162,14 +145,16 @@ class ClearActivity : AppCompatActivity() {
 
             override fun onAnimationEnd(animation: Animator?) {
                 isCleaned = true
+                binding.btnMain.isEnabled = true
+                binding.ellipse1.setImageResource(R.drawable.ic_ellipsize_green)
+                binding.btnMain.background = resources.getDrawable(R.drawable.bg_button_green)
                 stopAnimForMainEllipse()
                 setDetailSizeDataToZero()
+                replaceRefreshIconsForDoneGreen()
                 binding.btnMain.text = "Готово"
                 binding.btnMain.setOnClickListener {
                     finish()
                 }
-
-//                startAlarmManager()
             }
 
 
@@ -179,58 +164,6 @@ class ClearActivity : AppCompatActivity() {
         })
         animator.start()
     }
-
-//    fun SetAlarm() {
-////        val button: Button = buttons.get(2) // replace with a button from your own UI
-//        val receiver: BroadcastReceiver = object : BroadcastReceiver() {
-//            override fun onReceive(context: Context, intent: Intent) {
-////                button.setBackgroundColor(Color.RED)
-//                Log.d("OLOLO", "AWDAWDAWDAWDADW")
-//                context.unregisterReceiver(this) // this == BroadcastReceiver, not Activity
-//            }
-//        }
-//        this.registerReceiver(receiver, IntentFilter("com.blah.blah.somemessage"))
-//        val pintent = PendingIntent.getBroadcast(this, 0, Intent("com.blah.blah.somemessage"), 0)
-//        val manager = this.getSystemService(ALARM_SERVICE) as AlarmManager
-//
-//        // set alarm to fire 5 sec (1000*5) from now (SystemClock.elapsedRealtime())
-//        manager[AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 1000 * 5] =
-//            pintent
-//    }
-
-//    private fun startAlarmManager() {
-//        if (!PreferenceHelper.getInstance(this)?.isCleaned!!){
-//            PreferenceHelper.getInstance(this)?.isCleaned = true
-//            val alarmManager = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-//            val intent = Intent(this, Receiver::class.java)
-//
-//            // Used for filtering inside Broadcast receiver
-//            intent.action = "MyBroadcastReceiverAction"
-//            val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
-//
-//            // In this particular example we are going to set it to trigger after 30 seconds.
-//            // You can work with time later when you know this works for sure.
-//            val msUntilTriggerHour: Long = 25000
-//            val alarmTimeAtUTC: Long = System.currentTimeMillis() + msUntilTriggerHour
-//
-//            // Depending on the version of Android use different function for setting an
-//            // Alarm.
-//            // setAlarmClock() - used for everything lower than Android M
-//            // setExactAndAllowWhileIdle() - used for everything on Android M and higher
-//            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
-//                alarmManager.setAlarmClock(
-//                    AlarmManager.AlarmClockInfo(alarmTimeAtUTC, pendingIntent),
-//                    pendingIntent
-//                )
-//            } else {
-//                alarmManager.setExactAndAllowWhileIdle(
-//                    AlarmManager.RTC_WAKEUP,
-//                    alarmTimeAtUTC,
-//                    pendingIntent
-//                )
-//            }
-//        }
-//    }
 
     private fun setDetailSizeDataToZero() {
         binding.txtDetailSize1.text = "0 Б"
@@ -249,7 +182,6 @@ class ClearActivity : AppCompatActivity() {
 
         totalRandomSizeValue = (random1 + random2 + random3 + random4 + random5)
 
-        Toast.makeText(this, "total: $totalRandomSizeValue", Toast.LENGTH_SHORT).show()
         startCountAnimation(totalRandomSizeValue)
 
         _isTotalSizeAnimated.observe(this) {
@@ -432,6 +364,29 @@ class ClearActivity : AppCompatActivity() {
         }, random4)
         Handler().postDelayed({
             binding.imgUpdating5.setImageResource(R.drawable.ic_done)
+        }, random5)
+    }
+
+    fun replaceRefreshIconsForDoneGreen() {
+        val random1 = (0..1500L).random()
+        val random2 = (0..1500L).random()
+        val random3 = (0..1500L).random()
+        val random4 = (0..1500L).random()
+        val random5 = (0..1500L).random()
+        Handler().postDelayed({
+            binding.imgUpdating1.setImageResource(R.drawable.ic_done_green)
+        }, random1)
+        Handler().postDelayed({
+            binding.imgUpdating2.setImageResource(R.drawable.ic_done_green)
+        }, random2)
+        Handler().postDelayed({
+            binding.imgUpdating3.setImageResource(R.drawable.ic_done_green)
+        }, random3)
+        Handler().postDelayed({
+            binding.imgUpdating4.setImageResource(R.drawable.ic_done_green)
+        }, random4)
+        Handler().postDelayed({
+            binding.imgUpdating5.setImageResource(R.drawable.ic_done_green)
         }, random5)
     }
 
