@@ -2,17 +2,26 @@ package com.example.cleanapp
 
 import android.animation.Animator
 import android.animation.ValueAnimator
+import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Handler
+import android.util.Log
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import com.example.cleanapp.databinding.ActivityClearBinding
+import com.google.android.gms.ads.*
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import java.text.DecimalFormat
+
+const val AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
 
 
 class ClearActivity : AppCompatActivity() {
@@ -29,14 +38,32 @@ class ClearActivity : AppCompatActivity() {
     var countdownCurrentType = ""
     var totalRandomSizeValue = 0L
 
+    private var mInterstitialAd: InterstitialAd? = null
+    private var mCountDownTimer: CountDownTimer? = null
+    private var mGameIsInProgress = false
+    private var mAdIsLoading: Boolean = false
+    private var mTimerMilliseconds = 0L
+    private var TAG = "ClearActivity"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityClearBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        MobileAds.initialize(this) {}
+
+        MobileAds.setRequestConfiguration(
+            RequestConfiguration.Builder()
+                .setTestDeviceIds(listOf("ABCDEF012345"))
+                .build()
+        )
+
+        startAdMod()
         setAnimation()
         setBackButton()
         setDetailSizeData()
     }
+
 
     private fun setBackButton() {
         binding.backImg.setOnClickListener {
@@ -254,6 +281,8 @@ class ClearActivity : AppCompatActivity() {
             if (isClearingReady) {
                 startCountdown()
                 startAnimForMainEllipse()
+                showInterstitial()
+
             }
         }
     }
@@ -298,48 +327,24 @@ class ClearActivity : AppCompatActivity() {
         val random5 = (0..1500L).random()
         Handler().postDelayed({
             binding.imgUpdating1.setImageResource(R.drawable.ic_grey)
-            binding.text1.setCompoundDrawablesWithIntrinsicBounds(
-                null,
-                null,
-                resources.getDrawable(R.drawable.razvernut),
-                null
-            )
+  
         }, random1)
         Handler().postDelayed({
             binding.imgUpdating2.setImageResource(R.drawable.ic_grey)
-            binding.text2.setCompoundDrawablesWithIntrinsicBounds(
-                null,
-                null,
-                resources.getDrawable(R.drawable.razvernut),
-                null
-            )
+
         }, random2)
         Handler().postDelayed({
             binding.imgUpdating3.setImageResource(R.drawable.ic_grey)
-            binding.text3.setCompoundDrawablesWithIntrinsicBounds(
-                null,
-                null,
-                resources.getDrawable(R.drawable.razvernut),
-                null
-            )
+
         }, random3)
         Handler().postDelayed({
             binding.imgUpdating4.setImageResource(R.drawable.ic_grey)
-            binding.text4.setCompoundDrawablesWithIntrinsicBounds(
-                null,
-                null,
-                resources.getDrawable(R.drawable.razvernut),
-                null
-            )
+
         }, random4)
         Handler().postDelayed({
             binding.imgUpdating5.setImageResource(R.drawable.ic_grey)
-            binding.text5.setCompoundDrawablesWithIntrinsicBounds(
-                null,
-                null,
-                resources.getDrawable(R.drawable.razvernut),
-                null
-            )
+
+
         }, random5)
     }
 
@@ -434,5 +439,94 @@ class ClearActivity : AppCompatActivity() {
         binding.imgUpdating3.startAnimation(rotate)
         binding.imgUpdating4.startAnimation(rotate)
         binding.imgUpdating5.startAnimation(rotate)
+    }
+
+    private fun loadAd() {
+        var adRequest = AdRequest.Builder().build()
+
+        InterstitialAd.load(
+            this, AD_UNIT_ID, adRequest,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    Log.d(TAG, adError?.message)
+                    mInterstitialAd = null
+                    mAdIsLoading = false
+                    val error = "domain: ${adError.domain}, code: ${adError.code}, " +
+                            "message: ${adError.message}"
+                    Toast.makeText(
+                        this@ClearActivity,
+                        "onAdFailedToLoad() with error $error",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                    Log.d(TAG, "Ad was loaded.")
+                    mInterstitialAd = interstitialAd
+                    mAdIsLoading = false
+                    Toast.makeText(this@ClearActivity, "onAdLoaded()", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+    }
+
+    private fun showInterstitial() {
+        if (mInterstitialAd != null) {
+            mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdDismissedFullScreenContent() {
+                    Log.d(TAG, "Ad was dismissed.")
+                    // Don't forget to set the ad reference to null so you
+                    // don't show the ad a second time.
+                    mInterstitialAd = null
+                    loadAd()
+                }
+
+                override fun onAdFailedToShowFullScreenContent(adError: AdError?) {
+                    Log.d(TAG, "Ad failed to show.")
+                    // Don't forget to set the ad reference to null so you
+                    // don't show the ad a second time.
+                    mInterstitialAd = null
+                }
+
+                override fun onAdShowedFullScreenContent() {
+                    Log.d(TAG, "Ad showed fullscreen content.")
+                    // Called when ad is dismissed.
+                }
+            }
+            mInterstitialAd?.show(this)
+        } else {
+            Toast.makeText(this, "Ad wasn't loaded.", Toast.LENGTH_SHORT).show()
+            startAdMod()
+
+        }
+    }
+
+    private fun startAdMod() {
+        if (!mAdIsLoading && mInterstitialAd == null) {
+            mAdIsLoading = true
+            loadAd()
+        }
+    }
+
+    private fun resumeAdMod(milliseconds: Long) {
+        // Create a new timer for the correct length and start it.
+        mGameIsInProgress = true
+        mTimerMilliseconds = milliseconds
+        mCountDownTimer?.start()
+    }
+
+    // Resume the AdMod if it's in progress.
+    public override fun onResume() {
+        super.onResume()
+
+        if (mGameIsInProgress) {
+            resumeAdMod(mTimerMilliseconds)
+        }
+    }
+
+    // Cancel the timer if the AdMod is paused.
+    public override fun onPause() {
+        mCountDownTimer?.cancel()
+        super.onPause()
     }
 }

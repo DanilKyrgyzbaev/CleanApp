@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "356779726125",
+    "project_id": "clinerapp-1d055",
+    "storage_bucket": "clinerapp-1d055.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:356779726125:android:7380c2ed48705a064d6fa4",
+        "android_client_info": {
+          "package_name": "com.example.cleanapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "356779726125-r77aft6a3sqn2s6c92v05rsdo457dpp2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMSwdmZM9mn0Bl36BjmnGiHdLT715X9s4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "356779726125-r77aft6a3sqn2s6c92v05rsdo457dpp2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
