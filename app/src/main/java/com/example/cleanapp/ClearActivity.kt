@@ -62,6 +62,7 @@ class ClearActivity : AppCompatActivity() {
         setAnimation()
         setBackButton()
         setDetailSizeData()
+
     }
 
 
@@ -202,10 +203,10 @@ class ClearActivity : AppCompatActivity() {
 
     private fun setDetailSizeData() {
         val random1 = (0..1000L).random()
-        val random2 = (0..4000L).random()
-        val random3 = (0..4000L).random()
-        val random4 = (0..2000L).random()
-        val random5 = (0..3000L).random()
+        val random2 = (0..1000L).random()
+        val random3 = (0..1000L).random()
+        val random4 = (0..1000L).random()
+        val random5 = (0..1000L).random()
 
         totalRandomSizeValue = (random1 + random2 + random3 + random4 + random5)
 
@@ -320,11 +321,11 @@ class ClearActivity : AppCompatActivity() {
     }
 
     fun replaceRefreshIconsForGrey() {
-        val random1 = (0..1500L).random()
-        val random2 = (0..1500L).random()
-        val random3 = (0..1500L).random()
-        val random4 = (0..1500L).random()
-        val random5 = (0..1500L).random()
+        val random1 = (0..250L).random()
+        val random2 = (0..250L).random()
+        val random3 = (0..250L).random()
+        val random4 = (0..250L).random()
+        val random5 = (0..250L).random()
         Handler().postDelayed({
             binding.imgUpdating1.setImageResource(R.drawable.ic_grey)
   
@@ -350,11 +351,11 @@ class ClearActivity : AppCompatActivity() {
 
 
     fun replaceRefreshIconsForDone() {
-        val random1 = (0..1500L).random()
-        val random2 = (0..1500L).random()
-        val random3 = (0..1500L).random()
-        val random4 = (0..1500L).random()
-        val random5 = (0..1500L).random()
+        val random1 = (0..250L).random()
+        val random2 = (0..250L).random()
+        val random3 = (0..250L).random()
+        val random4 = (0..250L).random()
+        val random5 = (0..250L).random()
         Handler().postDelayed({
             binding.imgUpdating1.setImageResource(R.drawable.ic_done)
         }, random1)
@@ -373,11 +374,11 @@ class ClearActivity : AppCompatActivity() {
     }
 
     fun replaceRefreshIconsForDoneGreen() {
-        val random1 = (0..1500L).random()
-        val random2 = (0..1500L).random()
-        val random3 = (0..1500L).random()
-        val random4 = (0..1500L).random()
-        val random5 = (0..1500L).random()
+        val random1 = (0..250L).random()
+        val random2 = (0..250L).random()
+        val random3 = (0..250L).random()
+        val random4 = (0..250L).random()
+        val random5 = (0..250L).random()
         Handler().postDelayed({
             binding.imgUpdating1.setImageResource(R.drawable.ic_done_green)
         }, random1)
