@@ -21,7 +21,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import java.text.DecimalFormat
 
-const val AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
+const val AD_UNIT_ID = "ca-app-pub-8662482372360135~5394086193"
 
 
 class ClearActivity : AppCompatActivity() {
